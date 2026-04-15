@@ -8,36 +8,14 @@ mapa(1,8:9)=0;
 mapa(2,8:9)=0;
 mapa(19,8:9)=0;
 mapa(20,8:9)=0;
-% mapa = [
-%     1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1;
-%     1 0 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1;
-%     1 0 0 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 1 1;
-%     1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 1 1;
-%     1 1 1 1 1 1 0 0 0 1 1 1 0 0 0 0 1 1 1 1;
-%     1 0 0 0 1 1 0 0 0 1 1 1 0 0 0 0 1 1 1 1;
-%     1 0 0 0 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1;
-%     1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1;
-%     1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 0 1 1;
-%     1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1;
-%     1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1; 
-%     1 1 1 1 0 0 1 1 0 0 0 1 1 1 1 1 1 1 1 1;
-%     1 1 1 1 0 0 1 1 0 0 0 1 0 0 1 1 0 0 0 1;
-%     1 1 1 1 1 1 1 1 0 0 0 1 0 0 1 1 0 0 0 1;
-%     1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 1;
-%     1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1;
-%     1 1 1 1 1 1 1 1 1 0 0 0 1 1 1 1 1 0 0 1;
-%     1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 1 1 0 0 1;
-%     1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 1 1 1 1 1;
-%     1 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1;
-% ];
 [nRows,nCols]=size(mapa);
 
 %*************POSICIONES DE SALIDA/LLEGADA DE LOS ROBOTS************************
 %*******************************************************************************
-startNode1=[1, 1];
-goalNode1=[20,20];
-startNode2=[20, 20];
-goalNode2=[1,1];
+startNode1=[15, 1];
+goalNode1=[15,20];
+startNode2=[15, 20];
+goalNode2=[15,1];
 robotStartNodes = [startNode1;startNode2];
 robotGoalNodes  = [goalNode1;goalNode2];
 numRobots = size(robotStartNodes, 1);
@@ -55,8 +33,8 @@ maxIter=50;
 alpha=1;
 beta=8;
 rho=0.1;
-bestPaths= struct('opt_path', {}, 'cost', {},'path',{} ,'rot_cost', {}); %Nos quedaremos con los tres mejores caminos
-bestPathsRobots= struct('opt_path', {}, 'cost', {},'path',{} ,'rot_cost', {}); %Nos quedaremos con los tres mejores caminos
+bestPaths= struct('path',{},'cost', {},'rot_cost', {}); %Nos quedaremos con los tres mejores caminos
+bestPathsRobots= struct('path',{},'cost', {},'rot_cost', {}); %Nos quedaremos con los tres mejores caminos
 for r = 1:numRobots
     
     startNode = robotStartNodes(r, :);
@@ -92,26 +70,28 @@ for r = 1:numRobots
         end
         bestPaths = updateBestPaths(ants, bestPaths);%mejores caminos para 1 robot
     end
-    bestPaths=optimizeBestPaths(bestPaths,mapa);
+    %bestPaths=updateCosts(bestPaths);
     bestPathsRobots{r} = bestPaths(1);
 
 end
+bestPathsRobots = collisionAvoidance(bestPathsRobots,mapa);
+%Estudio de colisiones y recalculo de las mismas
+
 %clase para simular robots
 robots = Robot.empty(length(bestPathsRobots), 0);
 for i=1:length(bestPathsRobots)
     
-    robots(i)=Robot(bestPathsRobots{i}.opt_path,length(bestPathsRobots),bestPathsRobots{i}.cost,bestPathsRobots{i}.rot_cost,0);
-    robots(i).smoothPathWithSpline(3);%realizamos la optimizacion
-    fprintf("Robot: %d Longitud=%.2f Coste rotaciones=%.2f\n",i,robots(i).cost_l,robots(i).cost_w)
+    robots(i)=Robot(bestPathsRobots{i}.path,length(bestPathsRobots),bestPathsRobots{i}.cost,bestPathsRobots{i}.rot_cost,0);
+    robots(i).update_costs();
+    fprintf("Robot: %d Longitud=%.2f Curvatura promedia =%.2f\n",i,robots(i).cost_l,robots(i).cost_w)
 
 end
-applyCollisionAvoidance(robots,mapa);
-
-
+applyCollisionAvoidance(robots); %%BASTANTE CUESTIONABLE SI ES NECESARIO
 tiempo_transcurrido=toc;
 fprintf('Tiempo transcurrido para realizar los calculos del algoritmo: %.2f\n',tiempo_transcurrido);    
-animatedPath(robots,mapa);
-
+addpath("lineTracker_MRS_ACO\")
+lineTracker_MRS_ACO_V2(robots,mapa);
+%animatedPath(robots,mapa);
 
 
 function [matriz_vecinos]=celdas_accesibles(mapaObs,ant)
@@ -154,7 +134,7 @@ function bestPaths = resetBestPaths(n)
 % Crea un vector de n estructuras vacías con los campos definidos
 
     % Inicializa el primer elemento
-    vacio = struct('opt_path', {}, 'cost', {},'path',{} ,'rot_cost', {});
+    vacio = struct('path',{},'cost', {},'rot_cost', {});
     
     % Rellena el resto
     bestPaths = repmat(vacio, 1, n);

@@ -23,8 +23,13 @@ function applyCollisionAvoidance(robots, mapa, safety_dist)
         % Comprobación de conflictos entre pares
         for i = 1:nRobots
             for j = i+1:nRobots
-                if norm(positions(i,:) - positions(j,:)) < safety_dist
-                    % Conflicto detectado → el robot con menor prioridad se detiene
+                % Comprobación robusta antes de acceder a .log_stop(end)
+
+                if norm(positions(i,:) - positions(j,:)) < safety_dist && ...
+                   (isempty(robots(i).log_stop) && isempty(robots(j).log_stop) || ...
+                    (~isempty(robots(i).log_stop) && robots(i).log_stop(end) + 150 < t) || ...
+                    (~isempty(robots(j).log_stop) && robots(j).log_stop(end) + 150 < t))
+                                    % Conflicto detectado → el robot con menor prioridad se detiene
                     % if flag_matrix(i,j) == 0 && flag_matrix(j,i) == 0
                         if i < j
                             % El robot i espera
@@ -32,12 +37,14 @@ function applyCollisionAvoidance(robots, mapa, safety_dist)
                             robots(i).smoothedPath = [robots(i).smoothedPath(1:t-1,:); ...
                                                       robots(i).smoothedPath(t-1,:); ...
                                                       robots(i).smoothedPath(t:end,:)];
+                            robots(i).log_stop=[robots(i).log_stop;t];%ALmacenamos la fila en la que hay que parar el robot
                             flag_matrix(i,j) = 1;
                             flag_matrix(j,i) = 2;
                         else
                             robots(j).smoothedPath = [robots(j).smoothedPath(1:t-1,:); ...
                                                       robots(j).smoothedPath(t-1,:); ...
                                                       robots(j).smoothedPath(t:end,:)];
+                            robots(j).log_stop=[robots(j).log_stop;t];
                             flag_matrix(j,i) = 1;
                             flag_matrix(i,j) = 2;
                         end

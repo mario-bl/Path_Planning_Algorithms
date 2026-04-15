@@ -27,6 +27,7 @@ classdef Robot < handle
             obj.oldTheta=0;
             obj.orientation=theta0;
             obj.log_stop=[];
+            obj.smoothedPath = obj.real_path;
             %obj.rob_n=id; 
             
         end
@@ -65,63 +66,27 @@ classdef Robot < handle
 
             % Asegurar que el último punto del path esté incluido
             obj.real_path = [obj.real_path; path(end,:)];
-        end
-
-        function smoothPathWithSpline(obj, degree)
-            if nargin < 1
-                degree = 3; % Por defecto, B-spline cúbica
-            end
-            X=obj.real_path(:,2);
-            Y=obj.real_path(:,1);
-            t=linspace(0,1,length(X));
             
-            sx=spapi(degree,t,X);
-            sy=spapi(degree,t,Y);
-            
-            t_fine=linspace(0,1,length(X)*20);
-            X_smooth = fnval(sx, t_fine)';
-            Y_smooth = fnval(sy, t_fine)';
-            
-            obj.smoothedPath=[Y_smooth,X_smooth];
-          
-        end
-
-        function smoothPathWithBSpline(obj, degree, numCtrlPoints)
-            if nargin < 2
-                degree = 3; % Por defecto cúbica
-            end
-            if nargin < 3
-                %numCtrlPoints = round(length(obj.real_path) / 2); % Por defecto, la mitad de los puntos originales
-                numCtrlPoints = round(length(obj.real_path) / 2);
-            end
-        
-            X = obj.real_path(:, 2);
-            Y = obj.real_path(:, 1);
-            t = linspace(0, 1, length(X));
-        
-            % Ajuste B-spline a los datos con 'numCtrlPoints' nodos de control
-            sx = spap2(numCtrlPoints, degree, t, X);
-            sy = spap2(numCtrlPoints, degree, t, Y);
-        
-            % Re-evaluamos en una malla fina para suavizar la trayectoria
-            t_fine = linspace(0, 1, length(X) * 20);
-            X_smooth = fnval(sx, t_fine)';
-            Y_smooth = fnval(sy, t_fine)';
-        
-            obj.smoothedPath = [Y_smooth, X_smooth];
         end
 
         function update_costs(obj)
             obj.cost_l=0;
             obj.cost_w=0;
-            obj.oldTheta=atan2(obj.smoothedPath(end,2)-obj.smoothedPath(1,2),obj.smoothedPath(end,1)-obj.smoothedPath(1,1));%orientacion inicial
+            stopCounter=0;
+            oldTh=atan2(obj.smoothedPath(end,2)-obj.smoothedPath(1,2),obj.smoothedPath(end,1)-obj.smoothedPath(1,1));%orientacion inicial
             for i=1:(length(obj.smoothedPath)-1)
-                obj.cost_l=obj.cost_l+norm(obj.smoothedPath(i+1,:)-obj.smoothedPath(i,:));
-                newTheta=atan2(obj.smoothedPath(i+1,1)-obj.smoothedPath(i,1),obj.smoothedPath(i+1,2)-obj.smoothedPath(i,2));
-                obj.cost_w=obj.cost_w+abs(obj.oldTheta-newTheta);
-                obj.oldTheta=newTheta;
+                d=norm(obj.smoothedPath(i+1,:)-obj.smoothedPath(i,:));
+                if d==0
+                    stopCounter=stopCounter+1;
+                else
+                    obj.cost_l=obj.cost_l+d;
+                    newTheta=atan2(obj.smoothedPath(i+1,1)-obj.smoothedPath(i,1),obj.smoothedPath(i+1,2)-obj.smoothedPath(i,2));
+                    dtheta=abs(angleDiff(newTheta,oldTh));
+                    obj.cost_w=obj.cost_w+(dtheta/d);
+                    oldTh=newTheta;
+                end
             end
-            obj.cost_w=obj.cost_w/length(obj.smoothedPath);
+            obj.cost_w=obj.cost_w/(length(obj.smoothedPath)-1-stopCounter);
 
             
         end

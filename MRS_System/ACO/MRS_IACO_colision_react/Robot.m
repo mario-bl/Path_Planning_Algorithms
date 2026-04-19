@@ -69,6 +69,33 @@ classdef Robot < handle
             
         end
 
+        function smoothPathWithBSpline(obj, degree, numCtrlPoints)
+            if nargin < 2
+                degree = 3; % Por defecto cúbica
+            end
+            if nargin < 3
+                %numCtrlPoints = round(length(obj.real_path) / 2); % Por defecto, la mitad de los puntos originales
+                numCtrlPoints = round(length(obj.real_path) / 10);
+            end
+        
+            X = obj.real_path(:, 2);
+            Y = obj.real_path(:, 1);
+            t = linspace(0, 1, length(X));
+        
+            % Ajuste B-spline a los datos con 'numCtrlPoints' nodos de control
+            sx = spap2(numCtrlPoints, degree, t, X);
+            sy = spap2(numCtrlPoints, degree, t, Y);
+        
+            % Re-evaluamos en una malla fina para suavizar la trayectoria
+            t_fine = linspace(0, 1, length(X) * 20);
+            X_smooth = fnval(sx, t_fine)';
+            Y_smooth = fnval(sy, t_fine)';
+        
+            obj.smoothedPath = [Y_smooth, X_smooth];
+            obj.update_costs;
+            
+        end
+
         function update_costs(obj)
             obj.cost_l=0;
             obj.cost_w=0;

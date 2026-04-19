@@ -165,7 +165,7 @@ function lineTracker_MRS_ACO_V2(Robots, mapa)
     end
 
     % --- Animación ---
-    for f = 1:n_frames
+    for f = 1:5:n_frames
         for i = 1:n_Robots
             if f <= length(Robots(i).tray_x)
                 x = Robots(i).tray_x(f);

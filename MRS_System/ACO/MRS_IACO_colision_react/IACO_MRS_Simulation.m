@@ -83,10 +83,11 @@ for i=1:length(bestPathsRobots)
     
     robots(i)=Robot(bestPathsRobots{i}.path,length(bestPathsRobots),bestPathsRobots{i}.cost,bestPathsRobots{i}.rot_cost,0);
     robots(i).update_costs();
+    %robots(i).smoothPathWithBSpline(3);%ojo con esto
     fprintf("Robot: %d Longitud=%.2f Curvatura promedia =%.2f\n",i,robots(i).cost_l,robots(i).cost_w)
 
 end
-applyCollisionAvoidance(robots); %%BASTANTE CUESTIONABLE SI ES NECESARIO
+%applyCollisionAvoidance(robots); %%BASTANTE CUESTIONABLE SI ES NECESARIO
 tiempo_transcurrido=toc;
 fprintf('Tiempo transcurrido para realizar los calculos del algoritmo: %.2f\n',tiempo_transcurrido);    
 addpath("lineTracker_MRS_ACO\")

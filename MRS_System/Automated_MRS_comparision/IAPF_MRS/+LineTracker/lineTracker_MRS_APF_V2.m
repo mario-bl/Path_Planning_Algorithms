@@ -147,7 +147,7 @@ function [logs]= lineTracker_MRS_APF_V2(Robots, obstacles)
     hold on;
     xlim([0,mapWidth]);
     ylim([0,mapHeight]);
-    axis equal;
+    %axis equal;
     grid on;
     title("IAPF-MRS FLAGS SOLUTION")
     xlabel('X (dm)')

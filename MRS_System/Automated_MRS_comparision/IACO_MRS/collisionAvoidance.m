@@ -6,11 +6,14 @@ maxT = max(lengths);
 recalcT_matrix = zeros(nRob);
 for t = 2:maxT
     positions = nan(nRob,2);
+    prevPos = nan(nRob,2);
     for r = 1:nRob
         if t <= size(pathsRobots{r}.path, 1)
             positions(r, :) = pathsRobots{r}.path(t, :);
+            prevPos(r, :) = pathsRobots{r}.path(t-1, :);
         else
             positions(r, :) = pathsRobots{r}.path(end, :); % Se queda quieto al final
+            prevPos(r, :) = pathsRobots{r}.path(end, :);
         end
     end
 

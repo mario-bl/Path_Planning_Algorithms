@@ -12,10 +12,15 @@ mapa(20,8:9)=0;
 
 %*************POSICIONES DE SALIDA/LLEGADA DE LOS ROBOTS************************
 %*******************************************************************************
-startNode1=[15, 1];
-goalNode1=[15,20];
-startNode2=[15, 20];
-goalNode2=[15,1];
+% startNode1=[15, 1];
+% goalNode1=[15,20];
+% startNode2=[15, 20];
+% goalNode2=[15,1];
+
+startNode1=[2, 1];
+goalNode1=[20,20];
+startNode2=[20, 20];
+goalNode2=[2,1];
 robotStartNodes = [startNode1;startNode2];
 robotGoalNodes  = [goalNode1;goalNode2];
 numRobots = size(robotStartNodes, 1);

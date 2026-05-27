@@ -6,11 +6,14 @@ maxT = max(lengths);
 recalcT_matrix = zeros(nRob);
 for t = 2:maxT
     positions = nan(nRob,2);
+    prevPos = nan(nRob,2);
     for r = 1:nRob
         if t <= size(pathsRobots{r}.path, 1)
             positions(r, :) = pathsRobots{r}.path(t, :);
+            prevPos(r, :) = pathsRobots{r}.path(t-1, :);
         else
             positions(r, :) = pathsRobots{r}.path(end, :); % Se queda quieto al final
+            prevPos(r, :) = pathsRobots{r}.path(end, :);
         end
     end
 
@@ -23,7 +26,7 @@ for t = 2:maxT
                 pathsRobots{j} = addStopPoint(pathsRobots{j},t); %%4 points on the path
                 recalculatePath = true;
                 rk = rk + 1;
-                dataRecalc.pos = [dataRecalc.pos; positions(j-1,:) ;positions(j,:)];
+                dataRecalc.pos = [dataRecalc.pos; prevPos(i,:) ;positions(j,:)];
                 dataRecalc.t = [dataRecalc.t; t-1; t]; 
                 dataRecalc = addAditionalcells(dataRecalc, pathsRobots{i}.path);
                 recalcT_matrix(i,j) = t;

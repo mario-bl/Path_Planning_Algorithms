@@ -1,8 +1,9 @@
 Relative to multy robot path planning we have 3 folders:
 
-  --> ACO 
-  --> APF 
-  --> Automated_MRS_comparision
+  > ACO 
+  > APF 
+  > Automated_MRS_comparision
+
 Due to the multi folders that ACO/APF have we explain on specific readmes how to use them. 
 At this readme you'll find how to use/modify the Automated_MRS_comparision folder.
 

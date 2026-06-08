@@ -50,8 +50,7 @@ function lineTracker_MRS_ACO_V2(Robots, mapa)
         y = trayectoria(1,1);
 
         tray_x = [];
-        tray
-y = [];
+        tray_y = [];
         wi_log=[];
         wd_log=[];
         theta_log=[];
@@ -164,7 +163,7 @@ y = [];
     end
 
     % --- Animación ---
-    for f = 1:n_frames
+    for f = 1:5:n_frames
         for i = 1:n_Robots
             if f <= length(Robots(i).tray_x)
                 x = Robots(i).tray_x(f);

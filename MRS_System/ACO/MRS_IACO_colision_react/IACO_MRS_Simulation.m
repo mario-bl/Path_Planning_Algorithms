@@ -3,11 +3,33 @@
 %******************DEFINICION DE MAPA DE TRABAJO ***************
 %***************************************************************
 tic;
-mapa=ones(20,20);
-mapa(1,8:9)=0;
-mapa(2,8:9)=0;
-mapa(19,8:9)=0;
-mapa(20,8:9)=0;
+mapa = [
+    1 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1;
+    1 0 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 1;
+    1 0 0 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 1 1;
+    1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 1 1 1 1;
+    1 1 1 1 1 1 0 0 0 1 1 1 0 0 0 0 1 1 1 1;
+    1 0 0 0 1 1 0 0 0 1 1 1 0 0 0 0 1 1 1 1;
+    1 0 0 0 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1;
+    1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1;
+    1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 0 0 1 1;
+    1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1 1;
+    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1; 
+    1 1 1 1 0 0 1 1 0 0 0 1 1 1 1 1 1 1 1 1;
+    1 1 1 1 0 0 1 1 0 0 0 1 0 0 1 1 0 0 0 1;
+    1 1 1 1 1 1 1 1 0 0 0 1 0 0 1 1 0 0 0 1;
+    1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 1;
+    1 1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1;
+    1 1 1 1 1 1 1 1 1 0 0 0 1 1 1 1 1 0 0 1;
+    1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 1 1 0 0 1;
+    1 1 1 0 0 0 1 1 1 0 0 0 1 1 1 1 1 1 1 1;
+    1 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1;
+];
+% mapa=ones(20,20);
+% mapa(1,8:9)=0;
+% mapa(2,8:9)=0;
+% mapa(19,8:9)=0;
+% mapa(20,8:9)=0;
 [nRows,nCols]=size(mapa);
 
 %*************POSICIONES DE SALIDA/LLEGADA DE LOS ROBOTS************************
@@ -17,10 +39,11 @@ mapa(20,8:9)=0;
 % startNode2=[15, 20];
 % goalNode2=[15,1];
 
-startNode1=[2, 1];
+startNode1=[1, 1];
 goalNode1=[20,20];
-startNode2=[20, 20];
-goalNode2=[2,1];
+startNode2=[20, 1];
+goalNode2=[1,19];
+
 robotStartNodes = [startNode1;startNode2];
 robotGoalNodes  = [goalNode1;goalNode2];
 numRobots = size(robotStartNodes, 1);
@@ -92,7 +115,7 @@ for i=1:length(bestPathsRobots)
     fprintf("Robot: %d Longitud=%.2f Curvatura promedia =%.2f\n",i,robots(i).cost_l,robots(i).cost_w)
 
 end
-%applyCollisionAvoidance(robots); %%BASTANTE CUESTIONABLE SI ES NECESARIO
+applyCollisionAvoidance(robots); %%BASTANTE CUESTIONABLE SI ES NECESARIO
 tiempo_transcurrido=toc;
 fprintf('Tiempo transcurrido para realizar los calculos del algoritmo: %.2f\n',tiempo_transcurrido);    
 addpath("lineTracker_MRS_ACO\")

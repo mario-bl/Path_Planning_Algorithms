@@ -1,6 +1,6 @@
 %Clase para cada robot
 
-classdef Robot<handle %%hereda de la clase handle--> son clases que trabajan por eferencia y no copia
+classdef RobotAPF<handle %%hereda de la clase handle--> son clases que trabajan por eferencia y no copia
 
     properties
         x;
@@ -23,12 +23,14 @@ classdef Robot<handle %%hereda de la clase handle--> son clases que trabajan por
         flagParallel;
         flag_matrix;
         waitCounter;
+
+        log_parallel;
         
     end
 
     methods
 
-        function obj=Robot(StartPoint,Target,v_max,obstacles,n_rob)
+        function obj=RobotAPF(StartPoint,Target,v_max,obstacles,n_rob)
             x0=StartPoint(1);
             y0=StartPoint(2);
             obj.goal=Target;
@@ -48,6 +50,7 @@ classdef Robot<handle %%hereda de la clase handle--> son clases que trabajan por
             obj.flagParallel=false; %bandera que se levanta si detectamos movimiento en paralelo con otro robot
             obj.flag_matrix=zeros(n_rob,n_rob);
             obj.waitCounter=0;
+            obj.log_parallel=[];
         end
 
         function nextPosition(obj,Force,dT,l,f,v_max,r_goal,i) %Factor de jitter que acorta el paso
@@ -58,11 +61,11 @@ classdef Robot<handle %%hereda de la clase handle--> son clases que trabajan por
                 if obj.flag_matrix(i,j) == 1
                     obj.waitCounter = obj.waitCounter + 1;
         
-                    if obj.waitCounter < 40
+                    if obj.waitCounter < 60
                         obj.path = [obj.path; [xOld, yOld]];
                         return
                     else
-                        fprintf("Robot %d ha esperado 40 pasos, continúa\n", i);
+                        fprintf("Robot %d ha esperado 60 pasos, continúa\n", i);
                         obj.flag_matrix(i,j) = 0; % libera la bandera
                         obj.waitCounter = 0; % resetea
                     end
@@ -131,10 +134,26 @@ classdef Robot<handle %%hereda de la clase handle--> son clases que trabajan por
             obj.cost_w=obj.cost_w/n_steps;
         end
 
-
-
-
-
+        function update_costs(obj)
+            obj.cost_l=0;
+            obj.cost_w=0;
+            oldTheta=atan2(obj.path(end,2)-obj.path(1,2),obj.path(end,1)-obj.path(1,1));
+            stopCounter=0;
+            for i=1:(length(obj.path)-1)
+                d=norm(obj.path(i+1,:)-obj.path(i,:));
+                obj.cost_l=obj.cost_l+d;
+                if d==0
+                    stopCounter=stopCounter+1;
+                else
+                    newTheta=atan2(obj.path(i+1,2)-obj.path(i,2),obj.path(i+1,1)-obj.path(i,1));
+                    dtheta=abs(angleDiff(newTheta,oldTheta));
+                    obj.cost_w=obj.cost_w+(dtheta/d);
+                    oldTheta=newTheta;
+                end
+            end
+            
+            obj.cost_w=obj.cost_w/(length(obj.path)-1-stopCounter); %Promedio de curvatura
+        end
 
     end
 

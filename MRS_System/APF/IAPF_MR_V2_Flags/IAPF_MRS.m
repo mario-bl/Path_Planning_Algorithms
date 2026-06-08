@@ -1,4 +1,4 @@
-function [F]=IAPF_MRS(rob,Robots,cts,n_obs_r,i_rob)
+function [F]=IAPF_MRS(rob,Robots,cts,i_rob)
     d_max=7;
     xGoal=rob.goal(1,1);
     yGoal=rob.goal(1,2);
@@ -27,16 +27,17 @@ function [F]=IAPF_MRS(rob,Robots,cts,n_obs_r,i_rob)
         d_ij=norm(Robots(j).path(end,:)-rob.path(end,:))-0.2;
         if(~isequal(Robots(j),rob))&&(d_ij<=cts.d_inf_robs) && (Robots(j).APF_flag) %%Condicion de que no sea el mismo robot, distancia menor o igual a la de influencia y el robot(j) no haya alcanzado el punto objetivo 
         
-            F_rep_x=F_rep_x+cts.k_rep*(1/d_ij-1/cts.d_inf_robs)/(d_ij^3)*min((rob.x-xGoal)^2+(rob.y-yGoal)^2,3*d_max)*(rob.x-Robots(j).x); 
-            F_rep_y=F_rep_y+cts.k_rep*(1/d_ij-1/cts.d_inf_robs)/(d_ij^3)*min((rob.x-xGoal)^2+(rob.y-yGoal)^2,3*d_max)*(rob.y-Robots(j).y);
+            F_rep_x=F_rep_x+3*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)/(d_ij^3)*min((rob.x-xGoal)^2+(rob.y-yGoal)^2,3*d_max)*(rob.x-Robots(j).x); 
+            F_rep_y=F_rep_y+3*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)/(d_ij^3)*min((rob.x-xGoal)^2+(rob.y-yGoal)^2,3*d_max)*(rob.y-Robots(j).y);
             
-            F_rep_x=F_rep_x-2*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)^2*(rob.x-xGoal);
-            F_rep_y=F_rep_y-2*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)^2*(rob.y-yGoal);
+            F_rep_x=F_rep_x-3*2*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)^2*(rob.x-xGoal);
+            F_rep_y=F_rep_y-3*2*cts.k_rep*(1/d_ij-1/cts.d_inf_robs)^2*(rob.y-yGoal);
             %%Añadimos un objeto virtual en la direccion destino
             % n=length(rob.obs); %Numero de obstaculos
             % m=length(Robots(j).obs);
             if (rob.flag_matrix(i_rob,j) == 1 && ~checkParallelRobots(rob,Robots(j),cts.l) && (rob.waitCounter==0))
                 fprintf("Robot %d y %d ya no están en paralelo, liberando bandera\n", i_rob, j);
+                rob.log_parallel=[rob.log_parallel;size(rob.path,1)] %Guardamos la fila en hasta la que hay que representar
                 rob.flag_matrix(i_rob,j) = 0;
                 rob.flag_matrix(j,i_rob) = 0;
                 Robots(j).flag_matrix(i_rob,j) = 0;
@@ -56,6 +57,7 @@ function [F]=IAPF_MRS(rob,Robots,cts,n_obs_r,i_rob)
                 fprintf("El robot %d y %d estan llevando a cabo un movimiento en paralelo \n",i_rob,j)
                 fprintf("Se frenara el robot %d \n",i_rob)
                 rob.flagParallel=false;
+                rob.log_parallel=[rob.log_parallel;size(rob.path,1)];
             end
         end
     end

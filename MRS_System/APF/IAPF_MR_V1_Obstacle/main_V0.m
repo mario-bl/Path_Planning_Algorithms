@@ -1,5 +1,7 @@
 %*********************DEFINICION CONSTANTES***************************
 % ********************************************************************
+clear;
+clc;
 tic;
 k_att=10;
 k_rep=8;
@@ -91,58 +93,6 @@ for i=1:length(Robots)
 
 end
 
-figure
-title("IAPF-MRS")
-xlabel('X')
-ylabel('Y')
-xlim([0,mapWidth])
-ylim([0,mapHeight])
-
-upObs=updateObstacles(Robots,obstacles);
-
-for i = 1:length(upObs)
-    % Extract obstacle properties
-    x = upObs(i).x;
-    y = upObs(i).y;
-    r = upObs(i).r;
-    c=upObs(i).colour;
-    
-    % Draw a filled circle (disk) using the rectangle function
-    rectangle('Position', [x - r, y - r, 2 * r, 2 * r], ...
-              'Curvature', [1, 1], ... % Makes it a circle
-              'FaceColor', c, ...   % Fill color
-              'EdgeColor', 'black');   % Border color
-end
-hold on
-
-colors = lines(length(Robots)); % Colores distintos para cada robot
-h = gobjects(1, length(Robots)); % Handles para las líneas
-p = gobjects(1, length(Robots)); % Handles para los puntos
-
-for i = 1:length(Robots)
-    h(i) = plot(NaN, NaN, 'Color', colors(i, :), 'LineWidth', 1.5); % Línea para el robot i
-    p(i) = scatter(NaN, NaN, 'filled', 'MarkerFaceColor', colors(i, :)); % Puntos para el robot i
-end
-
-% Animación
-max_points = max(arrayfun(@(robot) size(robot.path,1), Robots)); % Máximo número de puntos
-
-for i = 1:5:max_points
-    for j = 1:length(Robots)
-        if i <= size(Robots(j).path,1)
-            % Verificar si el objeto gráfico aún es válido
-            if isvalid(h(j)) && isvalid(p(j))
-                % Actualizar la línea y el punto del robot j
-                set(h(j), 'XData', Robots(j).path(1:i, 1), 'YData', Robots(j).path(1:i, 2));
-                set(p(j), 'XData', Robots(j).path(i, 1), 'YData', Robots(j).path(i, 2));
-            else
-                error('Objeto gráfico eliminado o no válido.');
-            end
-        end
-    end
-    
-    pause(0.01); % Controlar la velocidad de la animación
-    drawnow; % Actualizar la figura
-end
-
+addpath('lineTracker_MRS_APF\')
+logs=lineTracker_MRS_APF_V2(Robots,obstacles);
 
